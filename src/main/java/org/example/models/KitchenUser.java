@@ -29,7 +29,12 @@ public class KitchenUser{
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "kitchenAuthor",cascade = CascadeType.ALL,orphanRemoval = true)
     @JsonIgnore
     private List<Feedback> feedbacks = new ArrayList<>();
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "userKit",cascade = CascadeType.ALL,orphanRemoval = true)
+    @OneToMany(
+            fetch = FetchType.EAGER,
+            mappedBy = "userKit",
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE},
+            orphanRemoval = false
+    )
     @JsonIgnore
     private List<Recipe> recipes = new ArrayList<>();
     public void addFeedback(Feedback feedback) {

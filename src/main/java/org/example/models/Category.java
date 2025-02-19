@@ -19,5 +19,18 @@ public class Category {
     private String image;
     @ManyToMany
     private List<Recipe> usedRecipes;
-
+    public void addRecipe(Category category) {
+        List<Recipe> recipes = category.getUsedRecipes();
+        for(Recipe r : recipes) {
+            List<Category> categoryList = r.getCategories();
+            categoryList.add(this);
+        }
+    }
+    public void removeRecipe(Category category) {
+        List<Recipe> recipes = category.getUsedRecipes();
+        for(Recipe r : recipes) {
+            List<Category> categoryList = r.getCategories();
+            categoryList.remove(this);
+        }
+    }
 }

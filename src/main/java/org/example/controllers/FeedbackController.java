@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Tag(name = "Feedback", description = "The Feedback API")
 @RestController
 @RequestMapping("/api1/v1")
@@ -25,11 +27,42 @@ public class FeedbackController {
         this.recipeService = recipeService;
     }
     @PostMapping("/feedback/{userId}/{recipeId}")
-    public ResponseEntity<String> createMovieUser(@RequestBody Feedback feedback, @PathVariable long userId, @PathVariable long recipeId) {
+    public ResponseEntity<String> createFeedback(@RequestBody Feedback feedback, @PathVariable long userId, @PathVariable long recipeId) {
         KitchenUser kitchenUser = kitchenUserService.findById(userId);
         Recipe recipe = recipeService.findById(recipeId);
-        kitchenUser.addFeedback(feedback);
-        recipe.addFeedback(feedback);
+        if(kitchenUser != null){
+            kitchenUser.addFeedback(feedback);
+        }
+        if(recipe != null){
+            recipe.addFeedback(feedback);
+        }
+        feedbackService.save(feedback);
+        return ResponseEntity.ok("Ok"); //Переделать
+    }
+    @GetMapping("/feedback")
+    public ResponseEntity<List<Feedback>> getAllFeedbacks() {
+        List<Feedback> feedbacks = feedbackService.findAll();
+        return ResponseEntity.ok(feedbacks);
+    }
+
+    @GetMapping("/feedback/{id}")
+    public ResponseEntity<Feedback> getFeedbackById(@PathVariable Long id) {
+        Feedback feedback = feedbackService.findById(id);
+        return feedback != null
+                ? ResponseEntity.ok(feedback)
+                : ResponseEntity.notFound().build();
+    }
+    @DeleteMapping("/feedback/{id}/{recipeId}/{userId}")
+    public ResponseEntity<String> deleteFeedback(@PathVariable Long id,@PathVariable Long recipeId,@PathVariable Long userId) {
+        Feedback feedback = feedbackService.findById(id);
+        KitchenUser kitchenUser = kitchenUserService.findById(userId);
+        Recipe recipe = recipeService.findById(recipeId);
+        if(kitchenUser != null){
+            kitchenUser.removeFeedback(feedback);
+        }
+        if(recipe != null){
+            recipe.removeFeedback(feedback);
+        }
         feedbackService.save(feedback);
         return ResponseEntity.ok("Ok"); //Переделать
     }

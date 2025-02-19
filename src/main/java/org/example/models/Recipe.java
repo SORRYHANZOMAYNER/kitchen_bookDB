@@ -57,11 +57,25 @@ public class Recipe {
             recipes.add(this);
         }
     }
+    public void removeIngredient(Recipe recipe) {
+        List<Ingredient> ingredients1 = recipe.getIngredients();
+        for(Ingredient ingredient : ingredients1) {
+            List<Recipe> recipes = ingredient.getRecipes();
+            recipes.remove(this);
+        }
+    }
     public void addCategory(Recipe recipe) {
         List<Category> categories1 = recipe.getCategories();
         for(Category category : categories1) {
             List<Recipe> recipes = category.getUsedRecipes();
             recipes.add(this);
+        }
+    }
+    public void removeCategory(Recipe recipe) {
+        List<Category> categories1 = recipe.getCategories();
+        for(Category category : categories1) {
+            List<Recipe> recipes = category.getUsedRecipes();
+            recipes.remove(this);
         }
     }
 }

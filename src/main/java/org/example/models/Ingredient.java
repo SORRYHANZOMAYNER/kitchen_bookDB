@@ -22,4 +22,18 @@ public class Ingredient {
     private double price;
     @ManyToMany
     private List<Recipe> recipes;
+    public void addRecipe(Ingredient ingredient) {
+        List<Recipe> recipes = ingredient.getRecipes();
+        for(Recipe r : recipes) {
+            List<Ingredient> ingredients = r.getIngredients();
+            ingredients.add(this);
+        }
+    }
+    public void removeRecipe(Ingredient ingredient) {
+        List<Recipe> recipes = ingredient.getRecipes();
+        for(Recipe r : recipes) {
+            List<Ingredient> ingredients = r.getIngredients();
+            ingredients.remove(this);
+        }
+    }
 }
