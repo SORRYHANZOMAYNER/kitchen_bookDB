@@ -18,7 +18,6 @@ public class KitchenUser{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    private long userId;
     private String name;
     private String surName;
     private String email;
@@ -38,12 +37,17 @@ public class KitchenUser{
     @JsonIgnore
     private List<Recipe> recipes = new ArrayList<>();
     public void addFeedback(Feedback feedback) {
+        if (this.feedbacks == null) {
+            this.feedbacks = new ArrayList<>();
+        }
         feedbacks.add(feedback);
         feedback.setKitchenAuthor(this);
     }
     public void removeFeedback(Feedback feedback) {
-        feedbacks.remove(feedback);
-        feedback.setKitchenAuthor(null);
+        if (this.feedbacks != null){
+            feedbacks.remove(feedback);
+            feedback.setKitchenAuthor(null);
+        }
     }
     public void addRecipe(Recipe recipe) {
         recipes.add(recipe);

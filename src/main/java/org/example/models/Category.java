@@ -1,9 +1,11 @@
 package org.example.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -18,7 +20,8 @@ public class Category {
     private String description;
     private String image;
     @ManyToMany
-    private List<Recipe> usedRecipes;
+    @JsonIgnore
+    private List<Recipe> usedRecipes = new ArrayList<>();
     public void addRecipe(Category category) {
         List<Recipe> recipes = category.getUsedRecipes();
         for(Recipe r : recipes) {

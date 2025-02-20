@@ -1,6 +1,7 @@
 package org.example.controllers;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.example.models.Feedback;
 import org.example.models.KitchenUser;
 import org.example.models.Recipe;
 import org.example.services.KitchenUserService;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Tag(name = "User", description = "The User API")
@@ -55,5 +57,27 @@ public class KitchenUserController {
         }
         userService.deleteById(id);
     }
-
+    @PutMapping("/user/{id}")
+    public ResponseEntity<KitchenUser> updateUser(
+            @PathVariable Long id,
+            @RequestBody KitchenUser user) {
+        KitchenUser existingUser = userService.findById(id);
+        if(user.getUsername()!=null){
+            existingUser.setUsername(user.getUsername());
+        }
+        if(user.getPassword()!=null){
+            existingUser.setPassword(user.getPassword());
+        }
+        if(user.getEmail()!=null){
+            existingUser.setEmail(user.getEmail());
+        }
+        if(user.getName()!=null){
+            existingUser.setName(user.getName());
+        }
+        if(user.getSurName()!=null){
+            existingUser.setSurName(user.getSurName());
+        }
+        userService.save(existingUser);
+        return ResponseEntity.ok(existingUser);
+    }
 }

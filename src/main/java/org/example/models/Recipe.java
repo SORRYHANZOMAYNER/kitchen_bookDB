@@ -30,11 +30,9 @@ public class Recipe {
     private LocalDateTime lastModifiedDate;
 
 
-    @ManyToMany(mappedBy = "recipes",cascade = CascadeType.ALL)
-    @JsonIgnore
+    @ManyToMany(mappedBy = "recipes", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private List<Ingredient> ingredients = new ArrayList<>();
-    @ManyToMany(mappedBy = "usedRecipes",cascade = CascadeType.ALL)
-    @JsonIgnore
+    @ManyToMany(mappedBy = "usedRecipes", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private List<Category> categories = new ArrayList<>();
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "recipe",cascade = CascadeType.ALL,orphanRemoval = true)
     @JsonIgnore

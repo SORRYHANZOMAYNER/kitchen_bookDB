@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Tag(name = "Feedback", description = "The Feedback API")
@@ -30,6 +31,7 @@ public class FeedbackController {
     public ResponseEntity<String> createFeedback(@RequestBody Feedback feedback, @PathVariable long userId, @PathVariable long recipeId) {
         KitchenUser kitchenUser = kitchenUserService.findById(userId);
         Recipe recipe = recipeService.findById(recipeId);
+        feedback.setCreatedDate(LocalDateTime.now());
         if(kitchenUser != null){
             kitchenUser.addFeedback(feedback);
         }
@@ -65,6 +67,18 @@ public class FeedbackController {
         }
         feedbackService.save(feedback);
         return ResponseEntity.ok("Ok"); //Переделать
+    }
+    @PutMapping("/feedback/{id}")
+    public ResponseEntity<Feedback> updateFeedback(@PathVariable Long id, @RequestBody Feedback feedbackDetails) {
+        Feedback existingFeedback = feedbackService.findById(id);
+        if (existingFeedback == null) {
+            return ResponseEntity.notFound().build();
+        }
+        existingFeedback.setMark(feedbackDetails.getMark());
+        existingFeedback.setContent(feedbackDetails.getContent());
+        existingFeedback.setCreatedDate(feedbackDetails.getCreatedDate());
+        Feedback updatedFeedback = feedbackService.save(existingFeedback);
+        return ResponseEntity.ok(updatedFeedback);
     }
 
 }

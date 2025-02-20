@@ -1,6 +1,7 @@
 package org.example.controllers;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.example.models.Feedback;
 import org.example.models.KitchenUser;
 import org.example.models.Recipe;
 import org.example.services.KitchenUserService;
@@ -9,7 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Tag(name = "Recipe", description = "The Recipe API")
@@ -24,7 +28,7 @@ public class RecipeController {
         this.kitchenUserService = kitchenUserService;
     }
     @PostMapping("/recipe/{userId}")
-    public ResponseEntity<String> createMovieUser(@RequestBody Recipe recipe,@PathVariable long userId) {
+    public ResponseEntity<String> createRecipe(@RequestBody Recipe recipe,@PathVariable long userId) {
         if(recipe.getCategories()!=null && recipe.getCategories().size()>0) {
             recipe.addCategory(recipe);
         }
@@ -35,6 +39,8 @@ public class RecipeController {
         if(kitchenUser!=null) {
             kitchenUser.addRecipe(recipe);
         }
+        recipe.setCreatedDate(LocalDateTime.now());
+        recipe.setLastModifiedDate(LocalDateTime.now());
         recipeService.save(recipe);
         return ResponseEntity.ok("Ok"); //Переделать
     }
@@ -65,5 +71,35 @@ public class RecipeController {
             kitchenUser.removeRecipe(recipe);
         }
         recipeService.deleteById(id);
+    }
+    @PutMapping("/recipe/{id}")
+    public ResponseEntity<Recipe> updateRecipe(
+            @PathVariable Long id,
+            @RequestBody Recipe recipeUpdate) {
+        Recipe existingRecipe = recipeService.findById(id);
+        existingRecipe.setTitle(recipeUpdate.getTitle());
+        existingRecipe.setDescription(recipeUpdate.getDescription());
+        existingRecipe.setImage(recipeUpdate.getImage());
+        existingRecipe.setPlan(recipeUpdate.getPlan());
+        existingRecipe.setCookingTime(recipeUpdate.getCookingTime());
+        existingRecipe.setQuantityPortion(recipeUpdate.getQuantityPortion());
+        existingRecipe.setCreatedDate(recipeUpdate.getCreatedDate());
+        List<Feedback> existingFeedbacks = existingRecipe.getFeedbacks();
+        List<Feedback> newFeedbacks = recipeUpdate.getFeedbacks();
+        existingRecipe.setLastModifiedDate(LocalDateTime.now());
+        if (newFeedbacks != null) {
+            for (Feedback newFeedback : newFeedbacks) {
+                if (!existingFeedbacks.contains(newFeedback)) {
+                    existingRecipe.addFeedback(newFeedback);
+                }
+            }
+            for (Feedback existingFeedback : existingFeedbacks) {
+                if (!newFeedbacks.contains(existingFeedback)) {
+                    existingRecipe.removeFeedback(existingFeedback);
+                }
+            }
+        }
+        Recipe savedRecipe = recipeService.save(existingRecipe);
+        return ResponseEntity.ok(savedRecipe);
     }
 }
