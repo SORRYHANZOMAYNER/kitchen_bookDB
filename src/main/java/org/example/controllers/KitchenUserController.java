@@ -1,38 +1,67 @@
 package org.example.controllers;
 
-import io.swagger.v3.oas.annotations.tags.Tag;
-import org.example.models.Feedback;
 import org.example.models.KitchenUser;
 import org.example.models.Recipe;
 import org.example.services.KitchenUserService;
 import org.example.services.RecipeService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDateTime;
 import java.util.List;
 
-@Tag(name = "User", description = "The User API")
 @RestController
 @RequestMapping("/api1/v1")
 public class KitchenUserController {
     private final KitchenUserService userService;
     private final RecipeService recipeService;
     @Autowired
-    public KitchenUserController(KitchenUserService userService,RecipeService recipeService){
+    public KitchenUserController(KitchenUserService userService, RecipeService recipeService){
         this.userService = userService;
         this.recipeService = recipeService;
     }
-    @PostMapping("/user")
+    @PostMapping("/register")
     public ResponseEntity<String> createMovieUser(@RequestBody KitchenUser user){
-        if(user.getPassword().length()>=4&&user.getPassword().length()<=12 && user.getUsername().length()>=4&&user.getUsername().length()<=12){
+        if (user.getUsername().length() > 15) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Длина логина должна быть меньше 15 символов");
+        }
+        KitchenUser userFromDB = userService.findByUsername(user.getUsername());
+
+        if (userFromDB != null) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Такой логин уже существует");
+        } else {
             userService.save(user);
-            return ResponseEntity.ok("Ok");
-        }else{
-            return ResponseEntity.badRequest().body("Длина пароля или логина должна быть от 4 до 12 символов");
+            System.out.println("Пользователь зарегистрирован: " + user);
+        }
+
+        return ResponseEntity.status(HttpStatus.CREATED).body("Успешная регистрация");
+    }
+    @GetMapping("/register")
+    public String registerPage() {
+        return "register";
+    }
+
+    @GetMapping("/login")
+    public String loginPage() {
+        return "login";
+    }
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody KitchenUser user) {
+        boolean isAuthenticated = userService.authenticate(user.getUsername(), user.getPassword());
+        if (isAuthenticated) {
+            return ResponseEntity.ok("Вход выполнен успешно");
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Неверный логин или пароль");
         }
     }
+    @PreAuthorize("isFullyAuthenticated()")
+    @GetMapping("/user/me")
+    public KitchenUser getCurrentUser(@AuthenticationPrincipal KitchenUser user) {
+        return userService.getCurrentAuthenticatedUser();
+    }
+
     @GetMapping("/user")
     public ResponseEntity<List<KitchenUser>> getAllUsers() {
         List<KitchenUser> users = userService.findAll();

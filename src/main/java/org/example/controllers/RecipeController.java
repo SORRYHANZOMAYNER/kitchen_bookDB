@@ -1,6 +1,5 @@
 package org.example.controllers;
 
-import io.swagger.v3.oas.annotations.tags.Tag;
 import org.example.models.Feedback;
 import org.example.models.KitchenUser;
 import org.example.models.Recipe;
@@ -9,14 +8,9 @@ import org.example.services.RecipeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
-@Tag(name = "Recipe", description = "The Recipe API")
 @RestController
 @RequestMapping("/api1/v1")
 public class RecipeController {

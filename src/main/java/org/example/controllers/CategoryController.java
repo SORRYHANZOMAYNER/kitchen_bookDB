@@ -1,6 +1,5 @@
 package org.example.controllers;
 
-import io.swagger.v3.oas.annotations.tags.Tag;
 import org.example.models.Category;
 import org.example.models.Feedback;
 import org.example.models.KitchenUser;
@@ -12,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "Category", description = "The Category API")
 @RestController
 @RequestMapping("/api1/v1")
 public class CategoryController {

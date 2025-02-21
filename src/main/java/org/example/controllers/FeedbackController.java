@@ -1,6 +1,5 @@
 package org.example.controllers;
 
-import io.swagger.v3.oas.annotations.tags.Tag;
 import org.example.models.Feedback;
 import org.example.models.KitchenUser;
 import org.example.models.Recipe;
@@ -14,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Tag(name = "Feedback", description = "The Feedback API")
 @RestController
 @RequestMapping("/api1/v1")
 public class FeedbackController {
