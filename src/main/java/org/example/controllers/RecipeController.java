@@ -1,5 +1,6 @@
 package org.example.controllers;
 
+import org.example.dto.RecipeDTO;
 import org.example.models.Feedback;
 import org.example.models.KitchenUser;
 import org.example.models.Recipe;
@@ -13,6 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api1/v1")
+@CrossOrigin(origins = "http://localhost:4200")
 public class RecipeController {
     private final RecipeService recipeService;
     private final KitchenUserService kitchenUserService;
@@ -39,18 +41,22 @@ public class RecipeController {
         return ResponseEntity.ok("Ok"); //Переделать
     }
     @GetMapping("/recipe")
-    public ResponseEntity<List<Recipe>> getAllRecipes() {
-        List<Recipe> recipes = recipeService.findAll();
-        return ResponseEntity.ok(recipes);
+    public List<Recipe> getAllRecipe(
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) String description) {
+        return recipeService.getAllRecipes(title, description);
+    }
+    @GetMapping("/recipe/{id}")
+    public ResponseEntity<RecipeDTO> getRecipeById(@PathVariable Long id) {
+        Recipe recipe = recipeService.findById(id);
+        if (recipe != null) {
+            RecipeDTO recipeDTO = convertToDTO(recipe);
+            return ResponseEntity.ok(recipeDTO);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
-    @GetMapping("/recipe/{id}")
-    public ResponseEntity<Recipe> getRecipeById(@PathVariable Long id) {
-        Recipe recipe = recipeService.findById(id);
-        return recipe != null
-                ? ResponseEntity.ok(recipe)
-                : ResponseEntity.notFound().build();
-    }
     @DeleteMapping("/recipe/{id}/{userId}")
     public void deleteRecipe(@PathVariable long id,@PathVariable long userId) {
         Recipe recipe = recipeService.findById(id);
@@ -74,7 +80,6 @@ public class RecipeController {
         existingRecipe.setTitle(recipeUpdate.getTitle());
         existingRecipe.setDescription(recipeUpdate.getDescription());
         existingRecipe.setImage(recipeUpdate.getImage());
-        existingRecipe.setPlan(recipeUpdate.getPlan());
         existingRecipe.setCookingTime(recipeUpdate.getCookingTime());
         existingRecipe.setQuantityPortion(recipeUpdate.getQuantityPortion());
         existingRecipe.setCreatedDate(recipeUpdate.getCreatedDate());
@@ -96,4 +101,28 @@ public class RecipeController {
         Recipe savedRecipe = recipeService.save(existingRecipe);
         return ResponseEntity.ok(savedRecipe);
     }
+
+    public RecipeDTO convertToDTO(Recipe recipe) {
+        RecipeDTO recipeDTO = new RecipeDTO();
+        recipeDTO.setId(recipe.getId());
+        recipeDTO.setTitle(recipe.getTitle());
+        recipeDTO.setDescription(recipe.getDescription());
+        recipeDTO.setCookingTime(recipe.getCookingTime());
+        recipeDTO.setImage(recipe.getImage());
+        recipeDTO.setQuantityPortion(recipe.getQuantityPortion());
+        recipeDTO.setCreatedDate(recipe.getCreatedDate());
+        recipeDTO.setLastModifiedDate(recipe.getLastModifiedDate());
+        recipeDTO.setInstruction(recipe.getInstruction());
+        recipeDTO.setIngredients(recipe.getIngredients());
+        recipeDTO.setCategories(recipe.getCategories());
+        recipeDTO.setFeedbacks(recipe.getFeedbacks());
+        KitchenUser kitchenUser = recipe.getUserKit();
+        if (kitchenUser != null) {
+            recipeDTO.setName(kitchenUser.getName());
+            recipeDTO.setSurname(kitchenUser.getSurName());
+        }
+
+        return recipeDTO;
+    }
+
 }

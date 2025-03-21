@@ -2,6 +2,7 @@ package org.example.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import kotlin.Pair;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -23,13 +24,12 @@ public class Recipe {
     private String cookingTime;
     private String image;
     private String quantityPortion;
-    private String plan;
     @Column(columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime createdDate;
     @Column(columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime lastModifiedDate;
-
-
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "recipe",cascade = CascadeType.ALL,orphanRemoval = true)
+    private List<PairList> instruction = new ArrayList<>();
     @ManyToMany(mappedBy = "recipes", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private List<Ingredient> ingredients = new ArrayList<>();
     @ManyToMany(mappedBy = "usedRecipes", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
@@ -47,6 +47,15 @@ public class Recipe {
     public void removeFeedback(Feedback feedback) {
         feedbacks.remove(feedback);
         feedback.setRecipe(null);
+    }
+    public void addInstructionBlock(PairList block) {
+        instruction.add(block);
+        block.setRecipe(this);
+    }
+
+    public void removeInstructionBlock(PairList block) {
+        instruction.remove(block);
+        block.setRecipe(null);
     }
     public void addIngredient(Recipe recipe) {
         List<Ingredient> ingredients1 = recipe.getIngredients();
