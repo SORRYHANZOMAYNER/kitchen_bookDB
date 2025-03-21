@@ -4,6 +4,7 @@ import org.example.models.Ingredient;
 import org.example.repositories.IngredientRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -24,11 +25,11 @@ public class IngredientService{
     public Ingredient findById(Long id) {
         return ingredientRepository.findById(id).orElse(null);
     }
-
+    @Transactional
     public Ingredient save(Ingredient ingredient) {
         return ingredientRepository.save(ingredient);
     }
-
+    @Transactional
     public void deleteById(Long id) {
         ingredientRepository.deleteById(id);
     }

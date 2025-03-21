@@ -43,7 +43,7 @@ public class KitchenUser implements UserDetails {
         if (this.feedbacks == null) {
             this.feedbacks = new ArrayList<>();
         }
-        feedbacks.add(feedback);
+        //feedbacks.add(feedback);
         feedback.setKitchenAuthor(this);
     }
     public void removeFeedback(Feedback feedback) {

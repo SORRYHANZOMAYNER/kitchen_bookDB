@@ -1,5 +1,7 @@
 package org.example.controllers;
 
+import org.example.configs.security.JwtService;
+import org.example.dto.FeedbackDTO;
 import org.example.models.Feedback;
 import org.example.models.KitchenUser;
 import org.example.models.Recipe;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api1/v1")
@@ -19,15 +22,19 @@ public class FeedbackController {
     private final FeedbackService feedbackService;
     private final KitchenUserService kitchenUserService;
     private final RecipeService recipeService;
+    private final JwtService jwtService;
     @Autowired
-    public FeedbackController(FeedbackService feedbackService,KitchenUserService kitchenUserService,RecipeService recipeService) {
+    public FeedbackController(FeedbackService feedbackService, KitchenUserService kitchenUserService, RecipeService recipeService, JwtService jwtService) {
         this.feedbackService = feedbackService;
         this.kitchenUserService = kitchenUserService;
         this.recipeService = recipeService;
+        this.jwtService = jwtService;
     }
-    @PostMapping("/feedback/{userId}/{recipeId}")
-    public ResponseEntity<String> createFeedback(@RequestBody Feedback feedback, @PathVariable long userId, @PathVariable long recipeId) {
-        KitchenUser kitchenUser = kitchenUserService.findById(userId);
+    @PostMapping("/feedback/{recipeId}")
+    public ResponseEntity<FeedbackDTO> createFeedback(@RequestBody Feedback feedback, @PathVariable long recipeId,@RequestHeader("Authorization") String authorizationHeader) {
+        String token = authorizationHeader.substring(7);
+        String username = jwtService.extractUsername(token);
+        KitchenUser kitchenUser = kitchenUserService.findByUsername(username);
         Recipe recipe = recipeService.findById(recipeId);
         feedback.setCreatedDate(LocalDateTime.now());
         if(kitchenUser != null){
@@ -37,20 +44,31 @@ public class FeedbackController {
             recipe.addFeedback(feedback);
         }
         feedbackService.save(feedback);
-        return ResponseEntity.ok("Ok"); //Переделать
+        return ResponseEntity.ok(convertToDTO(feedback));
     }
     @GetMapping("/feedback")
     public ResponseEntity<List<Feedback>> getAllFeedbacks() {
         List<Feedback> feedbacks = feedbackService.findAll();
         return ResponseEntity.ok(feedbacks);
     }
+    @GetMapping("/feedback/recipe/{recipeId}")
+    public ResponseEntity<List<FeedbackDTO>> getFeedbacksByRecipeId(@PathVariable long recipeId) {
+        List<Feedback> feedbacks = recipeService.findById(recipeId).getFeedbacks();
+        List<FeedbackDTO> feedbackDTOs = feedbacks.stream()
+                .map(FeedbackController::convertToDTO)
+                .toList();
+
+        return ResponseEntity.ok(feedbackDTOs);
+    }
 
     @GetMapping("/feedback/{id}")
-    public ResponseEntity<Feedback> getFeedbackById(@PathVariable Long id) {
+    public ResponseEntity<FeedbackDTO> getFeedbackById(@PathVariable Long id) {
         Feedback feedback = feedbackService.findById(id);
-        return feedback != null
-                ? ResponseEntity.ok(feedback)
-                : ResponseEntity.notFound().build();
+        FeedbackDTO feedbackDTO = null;
+        if(feedback != null){
+            feedbackDTO = convertToDTO(feedback);
+        }
+        return ResponseEntity.ok(feedbackDTO);
     }
     @DeleteMapping("/feedback/{id}/{recipeId}/{userId}")
     public ResponseEntity<String> deleteFeedback(@PathVariable Long id,@PathVariable Long recipeId,@PathVariable Long userId) {
@@ -63,7 +81,7 @@ public class FeedbackController {
         if(recipe != null){
             recipe.removeFeedback(feedback);
         }
-        feedbackService.save(feedback);
+        feedbackService.deleteById(id);
         return ResponseEntity.ok("Ok"); //Переделать
     }
     @PutMapping("/feedback/{id}")
@@ -78,5 +96,16 @@ public class FeedbackController {
         Feedback updatedFeedback = feedbackService.save(existingFeedback);
         return ResponseEntity.ok(updatedFeedback);
     }
+    public static FeedbackDTO convertToDTO(Feedback feedback) {
+        FeedbackDTO feedbackDTO = new FeedbackDTO();
+        feedbackDTO.setId(feedback.getId());
+        feedbackDTO.setContent(feedback.getContent());
+        feedbackDTO.setCreatedDate(feedback.getCreatedDate());
+        feedbackDTO.setMark(feedback.getMark());
+        if (feedback.getKitchenAuthor() != null) {
+            feedbackDTO.setUsername(feedback.getKitchenAuthor().getUsername());
+        }
 
+        return feedbackDTO;
+    }
 }
